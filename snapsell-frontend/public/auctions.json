@@ -1,0 +1,51 @@
+[
+  {
+    "id": 1,
+    "name": "iPhone 15 Pro Max",
+    "description": "Latest iPhone model with titanium body and A17 Pro chip.",
+    "imageUrl": "https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/iphone-15-pro-max",
+    "price": 90000,
+    "category": "Mobiles",
+    "type": "PUBLIC",
+    "status": "ACTIVE",
+    "startTime": "2025-09-15T10:00:00",
+    "endTime": "2025-09-20T10:00:00",
+    "bids": [
+      { "user": "Ravi", "amount": 91000 },
+      { "user": "Asha", "amount": 94000 },
+      { "user": "Kiran", "amount": 95000 }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "MacBook Air M2",
+    "description": "Powerful yet portable laptop with Apple Silicon M2 chip.",
+    "imageUrl": "https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/macbook-air-m2",
+    "price": 110000,
+    "category": "Laptops",
+    "type": "PUBLIC",
+    "status": "ACTIVE",
+    "startTime": "2025-09-14T12:00:00",
+    "endTime": "2025-09-19T12:00:00",
+    "bids": [
+      { "user": "Sunita", "amount": 115000 },
+      { "user": "Arjun", "amount": 120000 }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Sony WH-1000XM5",
+    "description": "Industry-leading noise cancelling headphones.",
+    "imageUrl": "https://m.media-amazon.com/images/I/61d5vqC0PAL._AC_SL1500_.jpg",
+    "price": 25000,
+    "category": "Accessories",
+    "type": "PUBLIC",
+    "status": "CLOSED",
+    "startTime": "2025-09-10T09:00:00",
+    "endTime": "2025-09-13T09:00:00",
+    "bids": [
+      { "user": "Neha", "amount": 26000 },
+      { "user": "Vikas", "amount": 28000 }
+    ]
+  }
+]

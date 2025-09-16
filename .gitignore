@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+
+# Local history for Git
+.gitattributes
+
+# Build artifacts
+target/
+build/
+dist/
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# Frontend-specific files
+npm-debug.log
+yarn-error.log
+
+# Backend-specific files
+*.jar
+*.war
+.mvnw.cmd
+.mvnw
+.mvn/
+logs/
+bin/
+
+# Exclude uploaded images from the repository
+snapsell-backend/uploads/

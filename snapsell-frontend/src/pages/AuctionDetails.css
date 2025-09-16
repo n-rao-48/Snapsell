@@ -1,0 +1,23 @@
+.details-container {
+  padding: 30px 50px;
+}
+
+.details-container img {
+  width: 100%;
+  max-width: 500px;
+  border-radius: 10px;
+  margin: 20px 0;
+}
+
+.bid-btn {
+  padding: 10px 20px;
+  background-color: #ff9900;
+  border: none;
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.bid-btn:hover {
+  background-color: #e68a00;
+}

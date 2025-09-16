@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/* Optional: nicer font + smooth rendering */
+:root { --bg: #0f172a; }
+html { scroll-behavior: smooth; }
+body { @apply bg-slate-50 text-slate-900; }
