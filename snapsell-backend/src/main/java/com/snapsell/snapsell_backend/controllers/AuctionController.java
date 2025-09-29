@@ -1,11 +1,10 @@
 package com.snapsell.snapsell_backend.controllers;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,60 +18,70 @@ import org.springframework.web.multipart.MultipartFile;
 import com.snapsell.snapsell_backend.models.Auction;
 import com.snapsell.snapsell_backend.models.AuctionType;
 import com.snapsell.snapsell_backend.services.AuctionService;
+import com.snapsell.snapsell_backend.services.FileStorageService;
 
 @RestController
 @RequestMapping("/api/auctions")
+@CrossOrigin(origins = "http://localhost:3000")
 public class AuctionController {
 
     @Autowired
     private AuctionService auctionService;
 
+    @Autowired
+    private FileStorageService fileStorageService;
 
-    @PostMapping("/create")
-    public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
-        try {
-            String uploadDir = "uploads/";
-            File uploadFolder = new File(uploadDir);
-            if (!uploadFolder.exists()) {
-                uploadFolder.mkdirs();
-            }
+    // ✅ Upload image and attach to auction
+    @PostMapping("/{id}/upload")
+    public ResponseEntity<?> uploadFile(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        Auction auction = auctionService.getAuctionById(id)
+                .orElseThrow(() -> new RuntimeException("Auction not found"));
 
-            String filePath = uploadDir + file.getOriginalFilename();
-            file.transferTo(new File(filePath));
+        String fileName = fileStorageService.storeFile(file);
 
-            // Return the URL of the uploaded image
-            String fileUrl = "http://localhost:8080/uploads/" + file.getOriginalFilename();
-            return ResponseEntity.ok(fileUrl);
-        } catch (IOException e) {
-            return ResponseEntity.status(500).body("File upload failed: " + e.getMessage());
-        }
+        // Set auction image URL
+        String fileUrl = "/uploads/" + fileName; // You can serve this via a static resource mapping
+        auction.setImageUrl(fileUrl);
+
+        auctionService.saveAuction(auction);
+
+        return ResponseEntity.ok("File uploaded successfully: " + fileUrl);
     }
-    // Create an auction
+
+    // ✅ Create new auction
     @PostMapping
     public ResponseEntity<Auction> createAuction(@RequestBody Auction auction) {
-        return ResponseEntity.ok(auctionService.createAuction(auction));
+        Auction saved = auctionService.createAuction(auction);
+        return ResponseEntity.ok(saved);
     }
-    // Get all auctions
+
+    // ✅ Get all auctions
     @GetMapping
-    public ResponseEntity<List<Auction>> getAllAuctions() {
+    public ResponseEntity<List<Auction>> getAll() {
         return ResponseEntity.ok(auctionService.getAllAuctions());
     }
-    // Get auction by ID
+
+    // ✅ Get auction by ID
     @GetMapping("/{id}")
-    public ResponseEntity<Auction> getAuctionById(@PathVariable Long id) {
+    public ResponseEntity<Object> getById(@PathVariable Long id) {
         return auctionService.getAuctionById(id)
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+                .<ResponseEntity<Object>>map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(404).body("Auction not found"));
     }
-    // Get only public auctions
+
+    // ✅ Get all PUBLIC auctions
     @GetMapping("/public")
-    public ResponseEntity<List<Auction>> getPublicAuctions() {
+    public ResponseEntity<List<Auction>> getPublic() {
         return ResponseEntity.ok(auctionService.getAuctionsByType(AuctionType.PUBLIC));
     }
 
-    // Close auction by ID
+    // ✅ Close auction
     @PutMapping("/{id}/close")
-    public ResponseEntity<Auction> closeAuction(@PathVariable Long id) {
-        return ResponseEntity.ok(auctionService.closeAuction(id));
+    public ResponseEntity<?> close(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(auctionService.closeAuction(id));
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(400).body(ex.getMessage());
+        }
     }
 }

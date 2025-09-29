@@ -9,11 +9,7 @@ import com.snapsell.snapsell_backend.models.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-
-    // Custom queries
     Optional<User> findByEmail(String email);
-
     Optional<User> findByPhone(String phone);
-
     Optional<User> findByUsername(String username);
 }

@@ -10,15 +10,18 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
+@Table(name = "users")
 @Data
-@Table(name = "users") // table name in DB
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, unique = true)
@@ -28,13 +31,12 @@ public class User {
     private String email;
 
     @Column(nullable = false)
-    private String password;  // will be hashed before saving
+    private String password;
 
     private String phone;
 
-    private String role = "USER"; // default role
+    private String role = "USER";
 
-    // Relationships with other entities
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Auction> auctions;
 

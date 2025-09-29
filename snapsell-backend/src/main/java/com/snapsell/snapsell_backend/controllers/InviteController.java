@@ -2,6 +2,7 @@ package com.snapsell.snapsell_backend.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,25 +14,22 @@ import com.snapsell.snapsell_backend.services.InviteService;
 
 @RestController
 @RequestMapping("/invites")
+@CrossOrigin(origins = "http://localhost:3000")
 public class InviteController {
 
     @Autowired
     private InviteService inviteService;
 
-    // Create invite
     @PostMapping("/{auctionId}")
-    public ResponseEntity<Invite> createInvite(@PathVariable Long auctionId, @RequestParam String email) {
-        return ResponseEntity.ok(inviteService.createInvite(auctionId, email));
+    public ResponseEntity<?> createInvite(@PathVariable Long auctionId, @RequestParam String email) {
+        Invite invite = inviteService.createInvite(auctionId, email);
+        return ResponseEntity.ok(invite);
     }
 
-    // Verify invite
     @PostMapping("/{auctionId}/verify")
-    public ResponseEntity<String> verifyInvite(@PathVariable Long auctionId, @RequestParam String passcode) {
-        boolean valid = inviteService.verifyInvite(auctionId, passcode);
-        if (valid) {
-            return ResponseEntity.ok("Invite verified! Access granted.");
-        } else {
-            return ResponseEntity.status(401).body("Invalid or expired invite.");
-        }
+    public ResponseEntity<?> verifyInvite(@PathVariable Long auctionId, @RequestParam String passcode) {
+        boolean ok = inviteService.verifyInvite(auctionId, passcode);
+        if (ok) return ResponseEntity.ok("Invite valid");
+        return ResponseEntity.status(401).body("Invalid or expired invite");
     }
 }

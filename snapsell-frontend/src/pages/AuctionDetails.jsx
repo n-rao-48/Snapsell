@@ -1,149 +1,64 @@
-import { useCallback, useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { formatCurrency } from "../utils/format";
-import "./AuctionDetails.css";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import auctionService from "../services/auctionService";
+import bidService from "../services/bidService";
 
-function AuctionDetails() {
+export default function AuctionDetails() {
   const { id } = useParams();
   const [auction, setAuction] = useState(null);
   const [bids, setBids] = useState([]);
+  const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [bidAmount, setBidAmount] = useState('');
 
-  const fetchAuctionDetails = useCallback(async () => {
-    try {
-      setLoading(true);
-      // Fetch auction details from the backend
-      const auctionResponse = await fetch(`http://localhost:8080/api/auctions/${id}`);
-      if (!auctionResponse.ok) {
-        throw new Error("Auction not found.");
-      }
-      const auctionData = await auctionResponse.json();
-      setAuction(auctionData);
-
-      // Fetch bids for the auction from the backend
-      const bidsResponse = await fetch(`http://localhost:8080/bids/${id}`);
-      const bidsData = await bidsResponse.json();
-      setBids(bidsData);
-
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [id, setLoading, setError, setAuction, setBids]);
-
-  const getHighestBid = () => {
-    if (bids && bids.length > 0) {
-      // Find the bid with the highest amount
-      const highestBid = bids.reduce((max, bid) => 
-        (max.amount > bid.amount ? max : bid)
-      );
-      return highestBid.amount;
-    }
-    return auction.price; // Use starting price if no bids exist
-  };
-  
   useEffect(() => {
-    fetchAuctionDetails();
-  }, [id, fetchAuctionDetails]);
-
-  const handleBidSubmit = async (e) => {
-    e.preventDefault();
-    if (!bidAmount || isNaN(bidAmount)) {
-      alert("Please enter a valid bid amount.");
-      return;
-    }
-
-    const newBid = {
-      amount: parseFloat(bidAmount),
-      // In a real app, you would get the user ID from a logged-in state
-      user: { id: 1 } // Mock user for now
-    };
-
-    try {
-      const response = await fetch(`http://localhost:8080/bids/${id}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newBid)
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || "Failed to place bid.");
+    (async () => {
+      try {
+        const a = await auctionService.getAuctionById(id);
+        setAuction(a);
+        const bs = await bidService.getBidsForAuction(id);
+        setBids(bs || []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
       }
+    })();
+  }, [id]);
 
-      // Re-fetch auction and bids to update the UI
-      fetchAuctionDetails();
-      setBidAmount('');
-      alert("Bid placed successfully!");
-
+  const handlePlace = async (e) => {
+    e.preventDefault();
+    if (!amount || Number(amount) <= 0) return alert("Enter valid amount");
+    try {
+      await bidService.placeBid(id, { amount: Number(amount), user: { id: 1 } });
+      // refresh bids
+      const bs = await bidService.getBidsForAuction(id);
+      setBids(bs || []);
+      setAmount("");
+      alert("Bid placed");
     } catch (err) {
-      alert(err.message);
+      console.error(err);
+      alert("Failed to place bid");
     }
   };
 
-  if (loading) return <p className="p-6">Loading...</p>;
-  if (error) return <p className="p-6 text-red-600">Error: {error}</p>;
-  if (!auction) return <p className="p-6">Auction not found.</p>;
+  if (loading) return <p>Loading...</p>;
+  if (!auction) return <p>Auction not found</p>;
 
   return (
-    <div className="p-6">
-      <Link to="/" className="text-blue-600 underline">
-        ← Back
-      </Link>
+    <div>
+      <h1>{auction.name}</h1>
+      <img src={auction.imageUrl} alt={auction.name} style={{ width: "100%", maxHeight: 400, objectFit: "cover" }} />
+      <p>{auction.description}</p>
 
-      <div className="mt-4 grid md:grid-cols-2 gap-6">
-        <img
-          src={auction.imageUrl}
-          alt={auction.name}
-          className="w-full h-64 object-cover rounded"
-        />
-        <div>
-          <h1 className="text-3xl font-bold mb-2">{auction.name}</h1>
-          <p className="text-gray-600 mb-4">{auction.description}</p>
-          <p className="text-lg font-semibold">
-            Current Bid: {formatCurrency(getHighestBid())}
-          </p>
-          
-          <form onSubmit={handleBidSubmit} className="mt-4">
-            <input
-              type="number"
-              value={bidAmount}
-              onChange={(e) => setBidAmount(e.target.value)}
-              placeholder="Enter your bid"
-              className="border p-2 rounded-md"
-              required
-            />
-            <button
-              type="submit"
-              className="ml-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
-            >
-              Place Bid
-            </button>
-          </form>
-        </div>
-      </div>
+      <form onSubmit={handlePlace} style={{ marginTop: 12 }}>
+        <input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="Enter your bid" />
+        <button type="submit">Place Bid</button>
+      </form>
 
-      <div className="mt-6">
-        <h2 className="text-xl font-bold mb-2">Bid History</h2>
-        {bids.length > 0 ? (
-          <ul className="list-disc pl-6">
-            {bids.map((b) => (
-              <li key={b.id}>
-                {b.user.username}: {formatCurrency(b.amount)}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No bids yet.</p>
-        )}
-      </div>
+      <h3 style={{ marginTop: 20 }}>Bid history</h3>
+      <ul>
+        {(bids || []).map(b => <li key={b.id}>{b.user?.username || "User"}: ₹{b.amount}</li>)}
+      </ul>
     </div>
   );
 }
-
-export default AuctionDetails;

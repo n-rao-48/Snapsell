@@ -21,23 +21,25 @@ public class BidService {
     private AuctionRepository auctionRepository;
 
     public Bid placeBid(Long auctionId, Bid bid) {
-        Auction auction = auctionRepository.findById(auctionId)
-                .orElseThrow(() -> new RuntimeException("Auction not found"));
-
-        // Validate higher than last bid
-        List<Bid> existingBids = bidRepository.findByAuctionOrderByAmountDesc(auction);
-        if (!existingBids.isEmpty() && bid.getAmount() <= existingBids.get(0).getAmount()) {
-            throw new RuntimeException("Bid must be higher than the current highest bid");
+        Auction auction = auctionRepository.findById(auctionId).orElseThrow(() -> new RuntimeException("Auction not found"));
+        if ("CLOSED".equalsIgnoreCase(auction.getStatus())) {
+            throw new RuntimeException("Auction closed");
         }
-
+        List<Bid> existing = bidRepository.findByAuctionOrderByAmountDesc(auction);
+        if (!existing.isEmpty() && bid.getAmount() <= existing.get(0).getAmount()) {
+            throw new RuntimeException("Bid must be higher than current highest bid");
+        }
         bid.setAuction(auction);
         bid.setBidTime(LocalDateTime.now());
         return bidRepository.save(bid);
     }
 
     public List<Bid> getBidsForAuction(Long auctionId) {
-        Auction auction = auctionRepository.findById(auctionId)
-                .orElseThrow(() -> new RuntimeException("Auction not found"));
+        Auction auction = auctionRepository.findById(auctionId).orElseThrow(() -> new RuntimeException("Auction not found"));
         return bidRepository.findByAuctionOrderByAmountDesc(auction);
+    }
+
+    public List<Bid> getBidsByUserId(Long userId) {
+        return bidRepository.findByUserId(userId);
     }
 }

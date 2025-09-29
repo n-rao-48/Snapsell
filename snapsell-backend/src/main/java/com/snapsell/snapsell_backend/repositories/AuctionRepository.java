@@ -10,8 +10,7 @@ import com.snapsell.snapsell_backend.models.AuctionType;
 
 @Repository
 public interface AuctionRepository extends JpaRepository<Auction, Long> {
-
     List<Auction> findByType(AuctionType type);
-
     List<Auction> findByStatus(String status);
+    List<Auction> findByOwnerId(Long ownerId);
 }

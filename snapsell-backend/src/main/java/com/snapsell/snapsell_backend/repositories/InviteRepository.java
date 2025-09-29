@@ -10,6 +10,5 @@ import com.snapsell.snapsell_backend.models.Invite;
 
 @Repository
 public interface InviteRepository extends JpaRepository<Invite, Long> {
-
     Optional<Invite> findByAuctionAndPasscode(Auction auction, String passcode);
 }

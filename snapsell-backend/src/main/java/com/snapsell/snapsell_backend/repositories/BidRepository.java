@@ -10,8 +10,6 @@ import com.snapsell.snapsell_backend.models.Bid;
 
 @Repository
 public interface BidRepository extends JpaRepository<Bid, Long> {
-
     List<Bid> findByAuctionOrderByAmountDesc(Auction auction);
-
     List<Bid> findByUserId(Long userId);
 }

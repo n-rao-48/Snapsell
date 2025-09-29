@@ -4,9 +4,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -14,38 +16,36 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "auctions")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Auction {
 
-@Id
-@GeneratedValue(strategy = GenerationType.IDENTITY)
-private long id;
-private String name;
-private String category;
-private int price;
-private String imageUrl; // URL to the auction photo
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-public Auction(long id, String name, String category, int price, String imageUrl) {
-    this.id = id;
-    this.name = name;
-    this.category = category;
-    this.price = price;
-    this.imageUrl = imageUrl;
-}
+    private String name;
+    private String category;
+    private Double price;       // starting price
+    private String description;
 
-@Enumerated(EnumType.STRING)
-private AuctionType type;  // PUBLIC or PRIVATE
+    @Column(name = "image_url")
+    private String imageUrl;
+
+    @Enumerated(EnumType.STRING)
+    private AuctionType type = AuctionType.PUBLIC;
 
     private LocalDateTime startTime;
     private LocalDateTime endTime;
-    private String status; // ACTIVE or CLOSED
+    private String status; // ACTIVE, CLOSED
 
-    // Relationships
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
 

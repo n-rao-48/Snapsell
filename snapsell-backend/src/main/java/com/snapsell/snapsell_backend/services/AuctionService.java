@@ -1,6 +1,6 @@
 package com.snapsell.snapsell_backend.services;
 
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,21 +18,13 @@ public class AuctionService {
     private AuctionRepository auctionRepository;
 
     public Auction createAuction(Auction auction) {
-        auction.setStatus("ACTIVE");
+        if (auction.getStartTime() == null) auction.setStartTime(LocalDateTime.now());
+        if (auction.getStatus() == null) auction.setStatus("ACTIVE");
         return auctionRepository.save(auction);
     }
 
     public List<Auction> getAllAuctions() {
-        List<Auction> auctions = new ArrayList<>();
-
-        auctions.add(new Auction(1, "iPhone 15 Pro Max", "Electronics", 95000, "https://via.placeholder.com/250"));
-        auctions.add(new Auction(2, "MacBook Air M2", "Electronics", 120000, "https://via.placeholder.com/250"));
-
-        return auctions;
-    }
-
-    public List<Auction> getAuctionsByType(AuctionType type) {
-        return auctionRepository.findByType(type);
+        return auctionRepository.findAll();
     }
 
     public Optional<Auction> getAuctionById(Long id) {
@@ -40,9 +32,21 @@ public class AuctionService {
     }
 
     public Auction closeAuction(Long id) {
-        Auction auction = auctionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Auction not found"));
-        auction.setStatus("CLOSED");
+        Auction a = auctionRepository.findById(id).orElseThrow(() -> new RuntimeException("Auction not found"));
+        a.setStatus("CLOSED");
+        a.setEndTime(LocalDateTime.now());
+        return auctionRepository.save(a);
+    }
+
+    public List<Auction> getAuctionsByType(AuctionType type) {
+        return auctionRepository.findByType(type);
+    }
+
+    public List<Auction> getAuctionsByOwnerId(Long ownerId) {
+        return auctionRepository.findByOwnerId(ownerId);
+    }
+
+    public Auction saveAuction(Auction auction) {
         return auctionRepository.save(auction);
     }
 }

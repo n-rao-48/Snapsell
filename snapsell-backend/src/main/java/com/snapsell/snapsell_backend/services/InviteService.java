@@ -22,27 +22,19 @@ public class InviteService {
     private AuctionRepository auctionRepository;
 
     public Invite createInvite(Long auctionId, String invitedEmail) {
-        Auction auction = auctionRepository.findById(auctionId)
-                .orElseThrow(() -> new RuntimeException("Auction not found"));
-
+        Auction auction = auctionRepository.findById(auctionId).orElseThrow(() -> new RuntimeException("Auction not found"));
         Invite invite = new Invite();
         invite.setAuction(auction);
         invite.setInvitedEmail(invitedEmail);
-        invite.setPasscode(UUID.randomUUID().toString().substring(0, 6)); // 6-char code
+        invite.setPasscode(UUID.randomUUID().toString().substring(0, 6));
         invite.setExpiryTime(LocalDateTime.now().plusDays(1));
-
         return inviteRepository.save(invite);
     }
 
     public boolean verifyInvite(Long auctionId, String passcode) {
-        Auction auction = auctionRepository.findById(auctionId)
-                .orElseThrow(() -> new RuntimeException("Auction not found"));
-
-        Optional<Invite> inviteOpt = inviteRepository.findByAuctionAndPasscode(auction, passcode);
-        if (inviteOpt.isEmpty()) {
-            return false;
-        }
-        Invite invite = inviteOpt.get();
-        return invite.getExpiryTime().isAfter(LocalDateTime.now());
+        Auction auction = auctionRepository.findById(auctionId).orElseThrow(() -> new RuntimeException("Auction not found"));
+        Optional<Invite> op = inviteRepository.findByAuctionAndPasscode(auction, passcode);
+        if (op.isEmpty()) return false;
+        return op.get().getExpiryTime().isAfter(LocalDateTime.now());
     }
 }
